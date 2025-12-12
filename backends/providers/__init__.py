@@ -1,21 +1,33 @@
 # ./backends/providers/__init__.py
-# Factory registration
-from typing import Dict, Type
-from abc import ABC
+"""Registry for backend provider adapters."""
+from typing import Callable, Dict, Type, TypeVar, Any
 
-PROVIDER_REGISTRY: Dict[str, Type["LLMProvider"]] = {}
+ProviderCls = TypeVar("ProviderCls")
 
-def register_provider(name: str):
-    def decorator(cls):
-        if not issubclass(cls, LLMProvider):
-            raise TypeError("Registered class must inherit from LLMProvider")
-        if name in PROVIDER_REGISTRY:
-            raise ValueError(f"Provider {name} already registered")
-        PROVIDER_REGISTRY[name] = cls
+PROVIDER_REGISTRY: Dict[str, Type[Any]] = {}
+
+
+def register_provider(api_type: str) -> Callable[[ProviderCls], ProviderCls]:
+    """Decorator to register a provider class for a given api_type."""
+    def decorator(cls: ProviderCls) -> ProviderCls:
+        if api_type in PROVIDER_REGISTRY:
+            raise ValueError(f"Provider type '{api_type}' already registered")
+        PROVIDER_REGISTRY[api_type] = cls
         return cls
+
     return decorator
 
-def get_provider(name: str, config: dict):
-    if name not in PROVIDER_REGISTRY:
-        raise ValueError(f"Provider {name} not registered")
-    return PROVIDER_REGISTRY[name](config)
+
+def get_provider_class(api_type: str) -> Type[Any]:
+    """Return the provider class associated with an api type."""
+    try:
+        return PROVIDER_REGISTRY[api_type]
+    except KeyError as exc:
+        raise ValueError(f"Provider type '{api_type}' not registered") from exc
+
+
+# Ensure provider modules are imported for side effects (decorator registration)
+from . import openai as _openai_provider  # noqa: E402,F401
+from . import ollama as _ollama_provider  # noqa: E402,F401
+from . import anthropic as _anthropic_provider  # noqa: E402,F401
+from . import vllm as _vllm_provider  # noqa: E402,F401

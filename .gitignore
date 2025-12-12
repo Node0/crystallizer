@@ -3,8 +3,17 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+
+
+# Development Notes
+notes/*
+crystallizer_folder_structure.md
+
 # Formative Assets
 art_assets/
+
+# Sample input documents
+sample_input_doc/
 
 # Mac OS X
 .DS_Store

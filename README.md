@@ -46,28 +46,30 @@ python crystallizer.py --help
 python crystallizer.py \
   --system-prompt system_prompt.j2 \
   --haystack-path ./chat_logs \
-  --provider ollama \
+  --connection ollama-local \
   --task-label gluon_design \
   --output-dir ./crystals
 ```
 
 ## Configuration
 
-Configure your LLM providers in `config.json`:
+Configure each LLM connection in `config.json`:
 
 ```json
 {
-  "providers": {
-    "ollama": {
-      "host": "localhost",
-      "port": 11434,
-      "model": "qwen2.5-coder:32b",
-      "context_length": 18000
+  "inference_service_connections": {
+    "ollama-local": {
+      "api_type": "ollama",
+      "base_url": "http://localhost:11434",
+      "default_model": "qwen2.5-coder:32b",
+      "default_ctx_len": 18000
     },
-    "openai": {
-      "api_key": "your-api-key",
-      "model": "gpt-4o-mini",
-      "context_length": 128000
+    "openai-main": {
+      "api_type": "openai",
+      "base_url": "https://api.openai.com/v1",
+      "api_key": "sk-...",
+      "default_model": "gpt-4o-mini",
+      "default_ctx_len": 128000
     }
   }
 }
@@ -83,4 +85,4 @@ Configure your LLM providers in `config.json`:
 - **Batch Processing**: Handle single files or entire directories
 
 ## License
-GNU GPL v3
+GNU AGPLv3

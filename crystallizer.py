@@ -10,12 +10,13 @@ import os
 import sys
 from pathlib import Path
 from typing import Dict, Any, List, Protocol
+
 import tiktoken
 from jinja2 import Template
-import requests
 import time
+
 from utilities import Print
-from backends.providers import get_provider
+from backends.providers import get_provider_class
 
 
 class LLMProvider(Protocol):
@@ -47,16 +48,26 @@ class TokenCounter:
 
 
 class Crystallizer:
-    def __init__(self, config_path: str, provider_name: str):
+    def __init__(self, config_path: str, connection_name: str):
         with open(config_path, 'r') as f:
             self.config = json.load(f)
-        self.provider_name = provider_name
-        self.provider_config = self.config["providers"][provider_name]
-        self.context_length = self.provider_config["context_length"]
 
-        # Factory pattern usage
-        provider_factory_class = get_provider(provider_name)
-        self.provider = provider_factory_class.create(self.provider_config)
+        connections = self.config.get("inference_service_connections", {})
+        if not connections:
+            raise ValueError("Config file missing 'inference_service_connections'")
+        if connection_name not in connections:
+            raise ValueError(f"Connection '{connection_name}' not found in config")
+
+        self.connection_name = connection_name
+        self.connection_config = connections[connection_name]
+        self.api_type = self.connection_config.get("api_type")
+        if not self.api_type:
+            raise ValueError(f"Connection '{connection_name}' missing 'api_type'")
+
+        provider_class = get_provider_class(self.api_type)
+        self.provider = provider_class(self.connection_config)
+
+        self.context_length = self.connection_config.get("default_ctx_len", 16000)
         self.token_counter = TokenCounter()
 
     def load_system_prompt(self, template_path: str, **kwargs) -> str:
@@ -161,7 +172,7 @@ Output should be well-structured and comprehensive."""
         base_name = file_path.stem
         token_count = self.token_counter.count_tokens(content)
         Print("INFO", f"Token count: {token_count:,}")
-        safe_window = self.context_length - 2000
+        safe_window = max(2000, self.context_length - 2000)
         all_crystals = []
         if token_count <= safe_window:
             Print("INFO", "Single window processing")
@@ -200,7 +211,8 @@ Output should be well-structured and comprehensive."""
         system_prompt = self.load_system_prompt(
             system_prompt_template,
             task_label=task_label,
-            provider=self.provider_name
+            provider=self.api_type,
+            connection=self.connection_name,
         )
         final_crystals = []
         if haystack.is_file():
@@ -231,8 +243,8 @@ def main():
                         help="Path to Jinja2 system prompt template")
     parser.add_argument("--haystack-path", required=True,
                         help="Path to text file or directory")
-    parser.add_argument("--provider", required=True,
-                        help="LLM provider (openai, ollama)")
+    parser.add_argument("--connection", "--provider", dest="connection_name", required=True,
+                        help="Name of the inference_service_connections entry to use")
     parser.add_argument("--config-file-path", default="./config/config.json",
                         help="Path to config file")
     parser.add_argument("--output-dir", default="./crystals",
@@ -243,9 +255,9 @@ def main():
 
     try:
         Print("STARTING", "Initializing crystallizer")
-        crystallizer = Crystallizer(args.config_file_path, args.provider)
+        crystallizer = Crystallizer(args.config_file_path, args.connection_name)
         Print("STATE", f"System prompt: {args.system_prompt}")
-        Print("STATE", f"Provider: {args.provider}")
+        Print("STATE", f"Connection: {crystallizer.connection_name} ({crystallizer.api_type})")
         Print("STATE", f"Task label: {args.task_label}")
         crystals = crystallizer.process_haystack(
             args.haystack_path,

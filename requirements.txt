@@ -1,15 +1,13 @@
 # Crystallizer Dependencies
 # Requires Python 3.11+
 
-# Core LLM and tokenization
+# Core runtime
 tiktoken>=0.7.0
 requests>=2.31.0
-
-# Template engine
 jinja2>=3.1.4
-
-# Type checking (runtime protocols)
 typing-extensions>=4.12.0
+rich>=13.7.1
+psutil>=5.9.8
 
 # Development and testing (optional)
 pytest>=8.0.0

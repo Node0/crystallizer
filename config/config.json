@@ -1,29 +1,70 @@
 {
-  "providers": {
-    "ollama": {
-      "host": "sharp-darwin.internal",
-      "port": 11434,
-      "model": "qwen2.5-coder:32b",
-      "context_length": 18000,
+  "inference_service_connections": {
+    "openai-main": {
+      "api_type": "openai",
+      "base_url": "https://api.openai.com/v1",
+      "api_key": "your-openai-api-key-here",
+      "default_model": "gpt-4o-mini",
+      "default_ctx_len": 128000,
+      "default_max_tokens": 1500,
+      "default_temperature": 0.1
+    },
+    "fireworks-ai": {
+      "api_type": "openai",
+      "base_url": "https://api.fireworks.ai/v1",
+      "api_key": "your-fireworks-api-key-here",
+      "default_model": "accounts/fireworks/models/llama-v3p1-70b-instruct",
+      "default_ctx_len": 128000,
+      "default_max_tokens": 8192,
+      "default_temperature": 0.1
+    },
+    "anthropic-main": {
+      "api_type": "anthropic",
+      "base_url": "https://api.anthropic.com/v1",
+      "api_key": "your-anthropic-api-key-here",
+      "default_model": "claude-3-5-sonnet-20240620",
+      "default_ctx_len": 200000,
+      "default_max_tokens": 1500,
+      "default_temperature": 0.0,
+      "anthropic_version": "2023-06-01",
+      "options": {
+        "top_p": 0.9,
+        "top_k": 50
+      }
+    },
+    "ollama-local": {
+      "api_type": "ollama",
+      "base_url": "http://sharp-darwin.internal:11434",
+      "default_model": "qwen2.5-coder:32b",
+      "default_ctx_len": 18000,
+      "default_max_tokens": 1500,
+      "default_temperature": 0.1,
       "options": {
         "num_keep": 6000,
         "num_predict": 1500,
         "num_ctx": 18000,
         "num_batch": 256,
         "num_thread": 96,
-        "temperature": 0.1,
         "top_p": 0.9,
         "use_mmap": true,
         "use_mlock": true
       }
     },
-    "openai": {
-      "api_key": "your-openai-api-key-here",
-      "model": "gpt-4o-mini",
-      "base_url": "https://api.openai.com/v1",
-      "context_length": 128000,
-      "max_tokens": 1500,
-      "temperature": 0.1
+    "vllm-production": {
+      "api_type": "vllm",
+      "base_url": "http://vllm-server.internal:8000/v1",
+      "api_key": "your-vllm-api-key-here",
+      "default_model": "meta-llama/Llama-3.1-70B-Instruct",
+      "default_ctx_len": 32768,
+      "default_max_tokens": 2048,
+      "default_temperature": 0.7,
+      "options": {
+        "top_p": 0.9,
+        "top_k": 50,
+        "presence_penalty": 0.0,
+        "frequency_penalty": 0.0,
+        "repetition_penalty": 1.0
+      }
     }
   }
 }
