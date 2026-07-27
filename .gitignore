@@ -189,3 +189,11 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+_old_morphic_repo
+design_docs/Ingestion_and_Provenance_Architecture.md
+.gitignore
+design_docs/Morphic_into_Crystallizer_Merge_Plan.md
+.gitignore
+design_docs/ingestion_schema.surql
+.gitignore
+history.txt

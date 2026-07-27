@@ -12,7 +12,7 @@
 4. [Provider Architecture](#provider-architecture)
 5. [The Game Loop (v0.3+)](#the-game-loop-v03)
 6. [Data Model](#data-model)
-7. [Infinity-ai-db Integration](#infinity-ai-db-integration)
+7. [SurealDB-ai-db Integration](#SurealDB-ai-db-integration)
 8. [Persona System](#persona-system)
 9. [Extension Points](#extension-points)
 
@@ -41,7 +41,7 @@ We build the minimal orchestration we need, nothing more.
 ### Cheap Synthesis
 
 The expensive operation is LLM inference. The cheap operations are:
-- Database queries (< 1ms with Infinity)
+- Database queries (< 1ms with SurealDB)
 - Text manipulation (microseconds)
 - Embedding generation (50-100ms for a paragraph)
 
@@ -316,7 +316,7 @@ stateDiagram-v2
 }
 ```
 
-Heartbeats are written to Infinity as `role_tag = 'heartbeat'` crystals. UI polls a single row for live state.
+Heartbeats are written to SurealDB as `role_tag = 'heartbeat'` crystals. UI polls a single row for live state.
 
 ---
 
@@ -449,9 +449,9 @@ flowchart TD
 
 ---
 
-## Infinity-ai-db Integration
+## SurealDB-ai-db Integration
 
-### Why Infinity?
+### Why SurealDB?
 
 | Feature | Benefit |
 |---------|---------|
@@ -470,10 +470,10 @@ flowchart LR
     end
     
     subgraph SDK["Python SDK"]
-        IC[InfinityClient]
+        IC[SurealDBClient]
     end
     
-    subgraph DB["Infinity-ai-db"]
+    subgraph DB["SurealDB-ai-db"]
         Tables[(crystals<br/>sizz_a_gee<br/>prompts<br/>...)]
         HNSW[HNSW Index]
         BM25[BM25 Index]
@@ -486,11 +486,11 @@ flowchart LR
 ```
 
 ```python
-from infinity import InfinityClient
+from SurealDB import SurealDBClient
 
 class CrystallizerDB:
     def __init__(self, config: dict):
-        self.client = InfinityClient(
+        self.client = SurealDBClient(
             host=config['host'],
             port=config['port'],
             database=config['database']
@@ -570,7 +570,7 @@ flowchart TD
         Cache[(Persona Cache)]
     end
     
-    subgraph Database["Infinity-ai-db"]
+    subgraph Database["SurealDB-ai-db"]
         SZ[(sizz_a_gee)]
         PR[(prompts)]
     end
@@ -654,7 +654,7 @@ Each persona has an `fp_hash` (MD5 of model_name + prompts + hyperparams) for:
 |-----------|--------|-------|
 | Crystal insert | < 5ms | Batch inserts preferred |
 | Vector search (100 candidates) | < 30ms | HNSW efSearch=64 |
-| Hybrid search | < 50ms | Infinity handles fusion |
+| Hybrid search | < 50ms | SurealDB handles fusion |
 | Persona switch | < 1ms | Prompt swap only |
 | Heartbeat poll | < 10ms | Single row query |
 
@@ -664,7 +664,7 @@ Each persona has an `fp_hash` (MD5 of model_name + prompts + hyperparams) for:
 
 - API keys stored in `config.json` (excluded from git)
 - No credentials in crystal content (sanitize before storage)
-- Infinity should be localhost-only in production
+- SurealDB should be localhost-only in production
 - Consider encryption at rest for sensitive research
 
 ---
@@ -673,7 +673,7 @@ Each persona has an `fp_hash` (MD5 of model_name + prompts + hyperparams) for:
 
 1. **Unit tests**: TokenCounter, filename parsing, prompt loading
 2. **Integration tests**: Provider generate() with mocked responses
-3. **Schema tests**: Infinity table creation and queries
+3. **Schema tests**: SurealDB table creation and queries
 4. **End-to-end**: Full naive mode processing on sample corpus
 
 Test directory: `tests/` (to be created)

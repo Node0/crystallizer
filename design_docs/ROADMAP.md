@@ -138,9 +138,9 @@ stateDiagram-v2
 
 The loop doesn't exit when a task completesâ€”it **idles**, waiting for the next mission. State persists. Artifacts accumulate. The system *learns* what it has already discovered.
 
-### Infinity-ai-db: The Persistent Memory Substrate
+### SurrealDB: The Persistent Memory Substrate
 
-We're integrating [Infinity](https://infiniflow.org/) (the C++-based AI-native database from Infiniflow, not the Java one) as the persistent memory substrate. Why Infinity?
+We're integrating [SurrealDB](https://surrealdb.org/) (the C++-based AI-native database from Infiniflow, not the Java one) as the persistent memory substrate. Why SurrealDB?
 
 - **0.1ms query latency** for vector search (HNSW)
 - **Hybrid search** combining dense vectors + sparse BM25 in one query
@@ -254,7 +254,7 @@ Now a single crystal can have arbitrarily rich critical analysis attached to itâ
 ```mermaid
 sequenceDiagram
     participant Loop as Game Loop
-    participant DB as Infinity-ai-db
+    participant DB as SurrealDB
     participant LLM as API Model
     
     Loop->>DB: Query crystal + reflections (~15ms)
@@ -313,7 +313,7 @@ With 4-6x RTX 3090s (96-144GB VRAM), we can:
 - Maintain a smaller "coordinator" model (Gemma-3 or similar) on a single card
 - Run embedding models in spare capacity
 
-The coordinator dispatches to the workhorse; the workhorse does the heavy lifting; Infinity provides the memory.
+The coordinator dispatches to the workhorse; the workhorse does the heavy lifting; SurrealDB provides the memory.
 
 ---
 
@@ -377,7 +377,7 @@ We build the minimal orchestration we need, nothing more.
 ### Cheap Synthesis
 
 The expensive operation is LLM inference. The cheap operations are:
-- Database queries (< 1ms with Infinity)
+- Database queries (< 1ms with SurrealDB)
 - Text manipulation (microseconds)
 - Embedding generation (50-100ms for a paragraph)
 
@@ -390,7 +390,7 @@ Architecture decisions favor **pre-indexed context retrieval** over **context st
 The immediate priorities are:
 
 1. **v0.2 Implementation**: RAG backend adapters (see implementation plan)
-2. **Infinity Integration**: Python SDK wrapper with Crystallizer-specific helpers
+2. **SurrealDB Integration**: Python SDK wrapper with Crystallizer-specific helpers
 3. **Schema Validation**: Testing the crystals/sizz-a-gee/reflections design against real workloads
 4. **Documentation**: Architecture guides, API references, worked examples
 
